@@ -17,3 +17,4 @@ app.get("/test",(req,res)=>{
 app.listen(7777,()=>{
     console.log("Server is listening");
 });
+
