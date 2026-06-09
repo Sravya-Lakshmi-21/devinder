@@ -2,16 +2,17 @@ const express = require("express");
 
 const app = express();
 
-app.get("/",(req,res)=>{
-    res.send("Hello from server");
-});
-
-app.get("/home",(req,res)=>{
-    res.send("Hello from home");
-});
-
-app.get("/test",(req,res)=>{
-    res.send("Hello from test");
+app.use("/home",
+    (req,res, next)=>{
+        console.log("1st Home");
+    //res.send("Hello from home1");
+    next();
+   
+},
+(req, res, next)=>{
+     console.log("2nd Home");
+    res.send("Hello from home2");
+    next();
 });
 
 app.listen(7777,()=>{
