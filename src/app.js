@@ -83,19 +83,24 @@ app.delete("/userByEmail", async (req, res)=>{
 })
 
 //update a document in User by passing the id
-app.patch("/updateUserById", async (req, res)=>{
-    const id = req.body.userId;
+app.patch("/updateUserById/:userId", async (req, res)=>{
+    const id = req.params?.userId;
     const data = req.body;
-    try{
-        //here in data we are passing id as well, but mongoose by default 
-        // ignores that id field as it is not there in our schema hence it just updates the record
-        // that matches the id
-        await User.findByIdAndUpdate({_id: id}, data,{
-            runValidators: true,
+    const ALLOWED_UPDATES = ["age", "lastName", "gender", "skills"];
+    const isAllowed = Object.keys(data).every(x => ALLOWED_UPDATES.includes(x));
+
+    try {
+        if (isAllowed) {
+            await User.findByIdAndUpdate({ _id: id }, data, {
+                runValidators: true,
+            }
+            );
+            res.send("User updated successfully");
+        }
+        else {
+            res.status(400).send("Cannot update these fields");
         }
 
-        );
-        res.send("User updated successfully");
     }
     catch(err){
         res.status(400).send("UPDATE FAILED:" + err.message);
