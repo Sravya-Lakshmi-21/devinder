@@ -39,7 +39,7 @@ app.post("/signup", async (req, res) => {
         res.send("User created successfully");
     }catch(err)
     {
-        res.status(400).send("Error while creating User");
+        res.status(400).send("CREATE FAILED:" + err.message);
     }
     
 })
@@ -56,7 +56,7 @@ app.get("/users", async (req,res)=>{
     
 })
 
-//get user by name
+//get user by email
 app.get("/userByEmail", async (req, res)=>{
      try{
         const email = req.body.emailId;
@@ -68,6 +68,41 @@ app.get("/userByEmail", async (req, res)=>{
         res.status(400).send(err);
     }
 })
+
+//delete user by email, there are other methods also for delete we need to use acc to our requirement
+app.delete("/userByEmail", async (req, res)=>{
+     try{
+        const email = req.body.emailId;
+        //.exec() sends null if there is no record found
+        const response = await User.findOneAndDelete({ emailId: email });
+        res.send(response);
+    }
+    catch(err){
+        res.status(400).send(err);
+    }
+})
+
+//update a document in User by passing the id
+app.patch("/updateUserById", async (req, res)=>{
+    const id = req.body.userId;
+    const data = req.body;
+    try{
+        //here in data we are passing id as well, but mongoose by default 
+        // ignores that id field as it is not there in our schema hence it just updates the record
+        // that matches the id
+        await User.findByIdAndUpdate({_id: id}, data,{
+            runValidators: true,
+        }
+
+        );
+        res.send("User updated successfully");
+    }
+    catch(err){
+        res.status(400).send("UPDATE FAILED:" + err.message);
+    }
+
+})
+
 
 
 
