@@ -1,11 +1,14 @@
 const dns = require('node:dns');
 dns.setServers(['1.1.1.1', '8.8.8.8']); 
 const express = require("express");
-const {connectDB} = require("./config/database");
 const app = express();
+const {connectDB} = require("./config/database");
 const User = require("./models/user");
 const {validateSignUp} = require("./utils/validate")
 const bcrypt = require("bcrypt")
+const cookieParser = require('cookie-parser');
+const jwt = require("jsonwebtoken");
+const {userAuth} = require("./middleware/auth")
 
 //we need to run the server only once the database connection is successful
 connectDB().then(()=>{
@@ -18,6 +21,8 @@ connectDB().then(()=>{
 })
 
 app.use(express.json());
+app.use(cookieParser());
+app.use(userAuth);
 
 app.post("/signup", async (req, res) => {
 
@@ -56,17 +61,48 @@ app.post("/login", async (req, res) => {
         }
         const isPasswordValid = await bcrypt.compare(password, existingUser.password)
         if(isPasswordValid){
+            //user is validated then we need to create a jwt token
+            const token = await jwt.sign({_id: existingUser._id.valueOf()}, "DevInder@2107");
+            res.cookie('token', token);
+            res.cookie('extracookie', "test");
             res.send("Login Successful");
         }
         else{
             throw new Error("Invalid credentials");
         }
-        
-
     }catch(err){
         res.status(400).send("ERROR:" + err.message);
     }
 })
+/*-----------------------PROFILE API's-----------------------*/
+app.get("/profile", async (req, res) => {
+    try {
+        //get cookies from request
+        const cookie = req.cookies;
+        console.log(cookie);
+        //get token from cookies
+        const { token } = cookie;
+        //decode the token by using below method and secret key
+        if(!token){
+            throw new Error ("Invalid Token");
+        }
+        const decodeToken = await jwt.verify(token, "DevInder@2107");
+        const { _id } = decodeToken;
+        //get user profile by passing the id from the token
+        const userProfile = await User.findById(_id);
+        if(!userProfile){
+            throw new Error ("User does not exist");
+        }
+        res.send(userProfile);
+
+    } catch (err) {
+        res.status(400).send("ERROR :" + err.message);
+    }
+
+})
+
+
+/*-----------------------USER API's-----------------------*/
 
 //get all users from User model data
 app.get("/users", async (req,res)=>{
