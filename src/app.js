@@ -75,6 +75,25 @@ app.post("/login", async (req, res) => {
     }
 })
 
+/*-----------------------PROFILE API's-----------------------*/
+//adding userAuth middle ware where user is authenticated
+app.get("/profile", userAuth, async (req, res) => {
+    try {
+        res.send(req.user);
+
+    } catch (err) {
+        res.status(400).send("ERROR :" + err.message);
+    }
+
+})
+
+app.post("/sendConnectionRequest", userAuth,  async (req, res)=>{
+    const user = req.user;
+    //Sending a connection request
+    res.send(user.firstName + " sent Connection request");
+})
+
+
 /*-----------------------USER API's-----------------------*/
 
 //get all users from User model data
@@ -137,18 +156,6 @@ app.patch("/updateUserById/:userId", async (req, res)=>{
     }
     catch(err){
         res.status(400).send("UPDATE FAILED:" + err.message);
-    }
-
-})
-
-/*-----------------------PROFILE API's-----------------------*/
-//adding userAuth middle ware where user is authenticated
-app.get("/profile", userAuth, async (req, res) => {
-    try {
-        res.send(req.user);
-
-    } catch (err) {
-        res.status(400).send("ERROR :" + err.message);
     }
 
 })
