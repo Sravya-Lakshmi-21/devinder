@@ -3,10 +3,11 @@ dns.setServers(['1.1.1.1', '8.8.8.8']);
 const express = require("express");
 const app = express();
 const {connectDB} = require("./config/database");
-const {validateSignUp} = require("./utils/validate")
 const cookieParser = require('cookie-parser');
-const { authRouter } = require("./routes/authRouter");
-const { userRouter } = require("./routes/userRouter");
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
 
 //we need to run the server only once the database connection is successful
 connectDB().then(()=>{
@@ -21,7 +22,10 @@ connectDB().then(()=>{
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/", authRouter, userRouter);
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+app.use("/", userRouter);
 
 
 
